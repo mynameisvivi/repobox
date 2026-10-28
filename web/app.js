@@ -343,7 +343,7 @@ function closeDrawer() { const d = $('drawer'); if (d.open) d.close ? d.close() 
 function renderConn(cfg) {
   const ok = Boolean(cfg && cfg.repo && cfg.token);
   $('conn').dataset.ok = ok ? '1' : '0';
-  $('conn').querySelector('span').textContent = ok ? cfg.repo.split('/')[1] : '尚未設定';
+  $('conn').querySelector('span').textContent = ok ? 'VV-repobox-library' : '尚未設定';
   $('library').href = ok ? `https://github.com/${cfg.repo}` : '#';
 }
 
