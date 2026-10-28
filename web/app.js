@@ -210,7 +210,7 @@ async function loadLib() {
   const cfg = loadCfg();
   const seq = ++libSeq;
   if (!cfg || !cfg.token) { Object.assign(lib, { state: 'ok', index: null, repo: null }); renderLibrary(); return; }
-  if (lib.repo !== cfg.repo) { Object.assign(lib, { state: 'ok', index: null, repo: cfg.repo }); renderLibrary(); }
+  if (lib.repo !== cfg.repo) { Object.assign(lib, { state: 'loading', index: null, repo: cfg.repo }); renderLibrary(); }
   const result = await loadIndex(cfg);
   const now = loadCfg();
   if (seq !== libSeq || !now || now.repo !== cfg.repo) return;
@@ -251,9 +251,10 @@ function catButton(key, label, count) {
 function renderLibrary() {
   const cfg = loadCfg();
   const note = $('lib-note');
-  note.textContent = lib.state === 'ok' || lib.state === 'empty' ? '' : STATE_TEXT[lib.state];
+  note.textContent = lib.state === 'loading' ? '正在載入書庫…' : (lib.state === 'ok' || lib.state === 'empty' ? '' : STATE_TEXT[lib.state]);
   const index = cfg && lib.repo === cfg.repo ? lib.index : null;
-  const items = cfg ? mergeLibrary(index, historyFor(cfg), cfg.repo) : [];
+  // While the canonical index is loading, do not briefly show stale local pending/failed captures.
+  const items = cfg ? mergeLibrary(index, lib.state === 'loading' ? [] : historyFor(cfg), cfg.repo) : [];
   const entries = items.filter((it) => it.kind === 'entry');
   const pending = items.filter((it) => it.kind === 'pending');
   const failed = items.filter((it) => it.kind === 'failed');
