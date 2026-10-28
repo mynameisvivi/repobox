@@ -102,7 +102,7 @@ function setStatus(text, cls = '') {
 }
 
 function setRepo(name) { $('block-repo').textContent = name || ''; }
-function setHint(text) { $('hint').textContent = text || ''; }
+function setHint(_text) { /* Manual-entry hint removed from the UI. */ }
 function clearActions() { $('block-actions').replaceChildren(); }
 
 function addAction(label, onClick, primary = false) {
@@ -388,14 +388,6 @@ function init() {
     renderConn(cfg);
     loadLib();
     setTimeout(closeDrawer, 600);
-  };
-
-  $('add').onsubmit = (e) => {
-    e.preventDefault();
-    const hit = findGitHubRepo($('add-url').value);
-    if (!hit) { setRepo(''); setStatus('沒找到連結', 'err'); setHint('這段文字裡沒有 GitHub repo 連結。'); return; }
-    $('add-url').value = '';
-    submit(hit, { source: 'manual' });
   };
 
   if (!cfg || !cfg.token) openDrawer();
