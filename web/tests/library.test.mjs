@@ -124,7 +124,7 @@ test('badges respect negation', async () => {
 
 test('categoryLabel never returns inherited object members', async () => {
   const { categoryLabel } = await import('../lib/library.mjs');
-  assert.equal(categoryLabel('mcp-server'), 'MCP 伺服器');
+  assert.equal(categoryLabel('mcp-server'), 'MCP 與工具整合');
   assert.equal(categoryLabel('constructor'), 'constructor');
   assert.equal(categoryLabel('toString'), 'toString');
   assert.equal(categoryLabel('__proto__'), '__proto__');
