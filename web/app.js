@@ -257,14 +257,22 @@ function renderLibrary() {
   const entries = items.filter((it) => it.kind === 'entry');
   const pending = items.filter((it) => it.kind === 'pending');
   const failed = items.filter((it) => it.kind === 'failed');
+  // Group internal category keys by their reader-facing label so aliases never appear as duplicate filters.
+  const label = (k) => categoryLabel(k) || k;
   const counts = new Map();
-  for (const it of entries) { const k = it.category || 'other'; counts.set(k, (counts.get(k) || 0) + 1); }
+  for (const it of entries) {
+    const k = it.category || 'other';
+    const name = label(k);
+    const group = counts.get(name) || { count: 0, keys: new Set() };
+    group.count += 1;
+    group.keys.add(k);
+    counts.set(name, group);
+  }
   const known = new Set(['', PENDING, FAILED, ...counts.keys()]);
   if (!known.has(libFilter) || (libFilter === PENDING && !pending.length) || (libFilter === FAILED && !failed.length)) libFilter = '';
 
   const cats = [catButton('', '全部', entries.length)];
-  const label = (k) => categoryLabel(k) || k;
-  for (const [k, n] of [...counts].sort((a, b) => b[1] - a[1] || label(a[0]).localeCompare(label(b[0]), 'zh-Hant'))) cats.push(catButton(k, label(k), n));
+  for (const [name, group] of [...counts].sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0], 'zh-Hant'))) cats.push(catButton(name, name, group.count));
   if (pending.length || failed.length) { const sep = document.createElement('i'); sep.className = 'sep'; cats.push(sep); }
   if (pending.length) cats.push(catButton(PENDING, '分析中', pending.length));
   if (failed.length) cats.push(catButton(FAILED, '失敗', failed.length));
@@ -284,7 +292,10 @@ function renderLibrary() {
   let cards;
   if (libFilter === PENDING) cards = pendingCards();
   else if (libFilter === FAILED) cards = failedCards();
-  else if (libFilter) cards = entryCards(entries.filter((it) => (it.category || 'other') === libFilter));
+  else if (libFilter) {
+    const group = counts.get(libFilter);
+    cards = entryCards(entries.filter((it) => group && group.keys.has(it.category || 'other')));
+  }
   else cards = [...pendingCards(), ...failedCards(), ...entryCards(entries)];
   $('recent').replaceChildren(...cards);
 }
