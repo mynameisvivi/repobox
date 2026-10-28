@@ -214,11 +214,6 @@ export function badges(requirements) {
       else if (os.length) out.push(...os);
       else if (positive(text, /瀏覽器|網頁|web/i) >= 0) out.push('網頁');
     }
-    if (label === '費用') {
-      if (positive(text, /訂閱|月費|年費/) >= 0) out.push('訂閱');
-      else if (positive(text, /用量|計費|使用費|按次/) >= 0) out.push('需付模型費');
-      else if (/免費/.test(text)) out.push('免費');
-    }
   }
   return out.slice(0, 3);
 }
@@ -228,7 +223,7 @@ export function badges(requirements) {
 const TAG_LABEL = {
   'agent-runtime': 'Agent 執行環境', 'ai-agents': 'AI Agent', chatgpt: 'ChatGPT',
   'local-agent': '本機執行', 'local-tools': '本機工具', macos: 'macOS', mcp: 'MCP',
-  'model-context-protocol': 'MCP', windows: 'Windows', workflow: '工作流程',
+  'model-context-protocol': 'MCP', workflow: '工作流程',
   'ios-shortcuts': 'iPhone 捷徑', iphone: 'iPhone', calendar: '行事曆',
   alarm: '鬧鐘自動化', 'taiwan-holidays': '台灣假日', automation: '自動化',
   'claude-code': 'Claude Code', codex: 'Codex', 'gemini-cli': 'Gemini CLI',
