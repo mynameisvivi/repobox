@@ -188,7 +188,7 @@ export function specRows(lines) {
   });
 }
 
-const OS = [['Windows', /windows/i], ['macOS', /mac\s?os|macos|\bmac\b|apple silicon/i], ['Linux', /linux/i],
+const OS = [['macOS', /mac\s?os|macos|\bmac\b|apple silicon/i], ['Linux', /linux/i],
   ['iOS', /\bios\b|iphone|ipad/i], ['Android', /android/i]];
 
 // A match counts only when no negation (不支援、無法、不需、不按…) sits just before it.
@@ -235,7 +235,7 @@ const TAG_LABEL = {
 export function tagBadges(tags) {
   const priority = ['local-agent','local-tools','mcp','workflow','ios-shortcuts','taiwan-holidays','automation',
     'agent-monitoring','dashboard','local-first','learning-roadmap','tutorial','rag','multi-agent-systems','trilingual',
-    'chatgpt','claude-code','codex','gemini-cli','macos','windows'];
+    'chatgpt','claude-code','codex','gemini-cli','macos'];
   const values = Array.isArray(tags) ? [...new Set(tags)] : [];
   values.sort((a,b) => (priority.indexOf(a) < 0 ? 999 : priority.indexOf(a)) - (priority.indexOf(b) < 0 ? 999 : priority.indexOf(b)));
   return values.map((t) => TAG_LABEL[t]).filter(Boolean).slice(0, 2);
