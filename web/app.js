@@ -1,6 +1,6 @@
 'use strict';
 
-import { loadIndex, mergeLibrary, badges, categoryLabel, STATE_TEXT } from './lib/library.mjs';
+import { loadIndex, mergeLibrary, badges, tagBadges, categoryLabel, STATE_TEXT } from './lib/library.mjs';
 
 const CFG_KEY = 'repobox.cfg';
 const RESERVED_OWNERS = new Set([
@@ -280,7 +280,7 @@ function renderLibrary() {
   const gh = `https://github.com/${cfg.repo}`;
   const pendingCards = () => pending.map((it) => card(`${gh}/actions`, true, 'pending', it.repo, `分析中 · ${ago(it.at)}`, []));
   const failedCards = () => failed.map((it) => card(`${gh}/blob/main/inbox/failed/${it.id}.json`, true, 'failed', it.repo, `分析失敗 · ${ago(it.at)}`, []));
-  const entryCards = (list) => list.map((it) => card(`read.html#${it.stem}`, false, '', it.tagline || it.intro || it.repo, it.repo, badges(it.requirements)));
+  const entryCards = (list) => list.map((it) => card(`read.html#${it.stem}`, false, '', it.title || it.tagline || it.intro || it.repo, it.repo, [...badges(it.requirements), ...tagBadges(it.tags)]));
   let cards;
   if (libFilter === PENDING) cards = pendingCards();
   else if (libFilter === FAILED) cards = failedCards();
