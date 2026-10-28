@@ -194,7 +194,7 @@ function ago(iso) {
   return hours < 24 ? `${hours} 小時前` : `${Math.round(hours / 24)} 天前`;
 }
 
-// These two stale captures were removed from the private library inbox after direct publishing.
+// Hide two stale capture-history records after their inbox files were removed.
 const DISMISSED_HISTORY_IDS = new Set(['20261027-161145-d5c4', '20261027-193201-e4f8']);
 
 function historyFor(cfg) {
