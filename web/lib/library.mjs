@@ -4,9 +4,21 @@
 export const STEM_RE = /^[a-z0-9._-]+__[a-z0-9._-]+$/;
 const API = 'https://api.github.com/repos';
 
-export const CATEGORY_LABEL = { 'agent-framework': 'Agent 框架', 'mcp-server': 'MCP 伺服器', 'dev-tool': '開發工具',
-  'model-inference': '模型推論', 'data-processing': '資料處理', frontend: '前端', infrastructure: '基礎設施', game: '遊戲',
-  'desktop-app': '桌面應用', other: '其他' };
+export const CATEGORY_LABEL = {
+  'agent-framework': 'AI Agent 與自動化',
+  'ai-observability': 'AI 開發與觀測',
+  'mcp-server': 'MCP 與工具整合',
+  'learning-resource': '學習與知識',
+  'ios-automation': '桌面與個人生產力',
+  'model-inference': '資料與模型',
+  'data-processing': '資料與模型',
+  frontend: '網站與介面',
+  infrastructure: '基礎設施',
+  game: '遊戲與互動',
+  'desktop-app': '桌面與個人生產力',
+  'dev-tool': 'AI 開發與觀測',
+  other: '其他'
+};
 
 // Category names come from a user-edited taxonomy and from index.json, so never read inherited members.
 export function categoryLabel(key) {
@@ -156,7 +168,8 @@ export function mergeLibrary(index, history, lib) {
   const str = (v) => (typeof v === 'string' ? v : '');
   const entries = (index && Array.isArray(index.entries) ? index.entries : [])
     .filter((e) => e && typeof e === 'object' && typeof e.repo === 'string' && typeof e.md === 'string')
-    .map((e) => ({ kind: 'entry', stem: stemOf(e.md), repo: e.repo, tagline: str(e.tagline), intro: str(e.intro), category: str(e.category),
+    .map((e) => ({ kind: 'entry', stem: stemOf(e.md), repo: e.repo, title: str(e.title), tagline: str(e.tagline), intro: str(e.intro), category: str(e.category),
+      tags: Array.isArray(e.tags) ? e.tags.filter((t) => typeof t === 'string') : [],
       requirements: Array.isArray(e.requirements) ? e.requirements.filter((r) => typeof r === 'string') : [], last_seen: str(e.last_seen) }))
     .filter((e) => e.stem && e.repo)
     .sort((a, b) => time(b.last_seen) - time(a.last_seen));
@@ -208,4 +221,27 @@ export function badges(requirements) {
     }
   }
   return out.slice(0, 3);
+}
+
+
+// Curated, reader-facing tags. Unknown repository tags are not shown as raw jargon.
+const TAG_LABEL = {
+  'agent-runtime': 'Agent 執行環境', 'ai-agents': 'AI Agent', chatgpt: 'ChatGPT',
+  'local-agent': '本機執行', 'local-tools': '本機工具', macos: 'macOS', mcp: 'MCP',
+  'model-context-protocol': 'MCP', windows: 'Windows', workflow: '工作流程',
+  'ios-shortcuts': 'iPhone 捷徑', iphone: 'iPhone', calendar: '行事曆',
+  alarm: '鬧鐘自動化', 'taiwan-holidays': '台灣假日', automation: '自動化',
+  'claude-code': 'Claude Code', codex: 'Codex', 'gemini-cli': 'Gemini CLI',
+  'agent-monitoring': '即時監控', dashboard: '儀表板', 'local-first': '本機優先',
+  'agentic-ai': 'Agentic AI', 'learning-roadmap': '學習路線', tutorial: '教學',
+  llm: '大型語言模型', rag: 'RAG', 'multi-agent-systems': '多 Agent',
+  'prompt-engineering': '提示工程', trilingual: '繁中／簡中／英文'
+};
+export function tagBadges(tags) {
+  const priority = ['local-agent','local-tools','mcp','workflow','ios-shortcuts','taiwan-holidays','automation',
+    'agent-monitoring','dashboard','local-first','learning-roadmap','tutorial','rag','multi-agent-systems','trilingual',
+    'chatgpt','claude-code','codex','gemini-cli','macos','windows'];
+  const values = Array.isArray(tags) ? [...new Set(tags)] : [];
+  values.sort((a,b) => (priority.indexOf(a) < 0 ? 999 : priority.indexOf(a)) - (priority.indexOf(b) < 0 ? 999 : priority.indexOf(b)));
+  return values.map((t) => TAG_LABEL[t]).filter(Boolean).slice(0, 2);
 }
