@@ -46,7 +46,7 @@ def _item(path: Path) -> dict:
     err = _check_capture(data)
     if err:
         return {"id": stem, "url": None, "force": False, "error": err}
-    return {"id": stem, "url": data["url"], "force": False}
+    return {"id": stem, "url": data["url"], "force": data.get("force") is True}
 
 
 def collect(inbox: Path, url: str, run_id: str) -> list[dict]:
