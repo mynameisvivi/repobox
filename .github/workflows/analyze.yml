@@ -361,10 +361,50 @@ PY
       - name: Move scripts out of the worktree
         run: mv "$GITHUB_WORKSPACE/.repobox-publish" "$REPOBOX"
 
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: cholateio/arch-blueprint
+          ref: ${{ env.ARCH_BLUEPRINT_SHA }}
+          path: .arch-blueprint
+          persist-credentials: false
+
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: repobox-out-*
           path: ${{ runner.temp }}/artifacts
+
+      - name: Recheck exact published SVG artifacts
+        run: |
+          set -euo pipefail
+          CHECK="$GITHUB_WORKSPACE/.arch-blueprint/skills/arch-blueprint/scripts/check.py"
+          for d in "$RUNNER_TEMP"/artifacts/repobox-out-*; do
+            [ -d "$d" ] || continue
+            status="$d/status.json"
+            [ -f "$status" ] || continue
+            [ "$(jq -r .status "$status")" = "ok" ] || continue
+            svg="$d/diagram.svg"
+            if [ ! -f "$svg" ] || ! python3 "$CHECK" "$svg" > "$d/check-publish.txt" 2>&1; then
+              err="publish-time arch-blueprint check failed; see check-publish.txt"
+              python3 - "$status" "$err" <<'PY'
+import json, pathlib, sys
+p = pathlib.Path(sys.argv[1])
+data = json.loads(p.read_text(encoding="utf-8"))
+data["status"] = "failed"
+data["error"] = sys.argv[2]
+data["diagram"] = False
+p.write_text(json.dumps(data, ensure_ascii=False) + "\\n", encoding="utf-8")
+PY
+              rm -f "$svg"
+            else
+              sha256sum "$svg" | tee "$d/diagram-published.sha256"
+              {
+                echo "### $(jq -r '.repo_id // "unknown"' "$status")"
+                echo "- arch-blueprint: $ARCH_BLUEPRINT_SHA"
+                echo "- publish-time check: PASS"
+                cat "$d/diagram-published.sha256"
+              } >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
 
       - name: Publish to library
         env:
