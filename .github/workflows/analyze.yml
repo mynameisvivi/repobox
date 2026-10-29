@@ -277,7 +277,7 @@ text = p.read_text(encoding="utf-8")
 marker = f"<!-- arch-blueprint-sha: {sha}; check: PENDING -->"
 if "</svg>" not in text:
     raise SystemExit("diagram.svg has no closing svg tag")
-p.write_text(text.replace("</svg>", marker + "\\n</svg>", 1), encoding="utf-8")
+p.write_text(text.replace("</svg>", marker + "\n</svg>", 1), encoding="utf-8")
 PY
               if ! python3 "$CHECK" "$OUT/diagram.svg" > "$STAGE/check.txt" 2>&1; then
                 python3 "$S/status.py" "$STAGE/status.json" --status failed --error "arch-blueprint check failed; see check.txt" "${common[@]}"
@@ -364,7 +364,7 @@ PY
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: cholateio/arch-blueprint
-          ref: ${{ env.ARCH_BLUEPRINT_SHA }}
+          ref: 3d48c959c889701fa9f02c14830f1a05d23aab6b
           path: .arch-blueprint
           persist-credentials: false
 
@@ -392,7 +392,7 @@ data = json.loads(p.read_text(encoding="utf-8"))
 data["status"] = "failed"
 data["error"] = sys.argv[2]
 data["diagram"] = False
-p.write_text(json.dumps(data, ensure_ascii=False) + "\\n", encoding="utf-8")
+p.write_text(json.dumps(data, ensure_ascii=False) + "\n", encoding="utf-8")
 PY
               rm -f "$svg"
             else
