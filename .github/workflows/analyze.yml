@@ -265,13 +265,43 @@ jobs:
             python3 "$S/status.py" "$STAGE/status.json" --status failed --error "summary: $(echo "$errs" | head -5 | tr '\n' ' ')" "${common[@]}"
           else
             cp "$OUT/summary.json" "$STAGE/summary.json"
-            diagram=()
-            if [ -f "$OUT/diagram.svg" ] && python3 "$CHECK" "$OUT/diagram.svg" > "$STAGE/check.txt" 2>&1 \
-                && python3 "$S/validate.py" svg "$OUT/diagram.svg" >> "$STAGE/check.txt"; then
-              cp "$OUT/diagram.svg" "$STAGE/diagram.svg"
-              diagram=(--diagram)
+            if [ ! -f "$OUT/diagram.svg" ]; then
+              python3 "$S/status.py" "$STAGE/status.json" --status failed --error "diagram.svg missing; architecture diagram is mandatory" "${common[@]}"
+              echo "diagram check: FAIL (missing)" > "$STAGE/check.txt"
+            else
+              python3 - "$OUT/diagram.svg" "$ARCH_BLUEPRINT_SHA" <<'PY'
+import pathlib, sys
+p = pathlib.Path(sys.argv[1])
+sha = sys.argv[2]
+text = p.read_text(encoding="utf-8")
+marker = f"<!-- arch-blueprint-sha: {sha}; check: PENDING -->"
+if "</svg>" not in text:
+    raise SystemExit("diagram.svg has no closing svg tag")
+p.write_text(text.replace("</svg>", marker + "\\n</svg>", 1), encoding="utf-8")
+PY
+              if ! python3 "$CHECK" "$OUT/diagram.svg" > "$STAGE/check.txt" 2>&1; then
+                python3 "$S/status.py" "$STAGE/status.json" --status failed --error "arch-blueprint check failed; see check.txt" "${common[@]}"
+              elif ! python3 "$S/validate.py" svg "$OUT/diagram.svg" >> "$STAGE/check.txt" 2>&1; then
+                python3 "$S/status.py" "$STAGE/status.json" --status failed --error "SVG safety validation failed; see check.txt" "${common[@]}"
+              else
+                python3 - "$OUT/diagram.svg" <<'PY'
+import pathlib, sys
+p = pathlib.Path(sys.argv[1])
+text = p.read_text(encoding="utf-8")
+text = text.replace("check: PENDING", "check: PASS", 1)
+p.write_text(text, encoding="utf-8")
+PY
+                if ! python3 "$CHECK" "$OUT/diagram.svg" >> "$STAGE/check.txt" 2>&1; then
+                  python3 "$S/status.py" "$STAGE/status.json" --status failed --error "final SVG check failed after adding provenance; see check.txt" "${common[@]}"
+                elif ! python3 "$S/validate.py" svg "$OUT/diagram.svg" >> "$STAGE/check.txt" 2>&1; then
+                  python3 "$S/status.py" "$STAGE/status.json" --status failed --error "final SVG safety validation failed; see check.txt" "${common[@]}"
+                else
+                  cp "$OUT/diagram.svg" "$STAGE/diagram.svg"
+                  sha256sum "$STAGE/diagram.svg" | tee "$STAGE/diagram.sha256"
+                  python3 "$S/status.py" "$STAGE/status.json" --status ok --diagram "${common[@]}"
+                fi
+              fi
             fi
-            python3 "$S/status.py" "$STAGE/status.json" --status ok "${diagram[@]}" "${common[@]}"
           fi
           {
             echo "## $FULL"
