@@ -394,7 +394,12 @@ function init() {
   handleIncoming(base, cfg);
   refreshStates().then(schedulePoll);
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) refreshStates().then(schedulePoll);
+    if (!document.hidden) {
+      // Refresh the published library index whenever the page becomes visible again.
+      // refreshStates() returns early when there are no local pending captures.
+      loadLib();
+      refreshStates().then(schedulePoll);
+    }
   });
 }
 
